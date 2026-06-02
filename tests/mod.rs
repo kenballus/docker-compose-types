@@ -119,10 +119,12 @@ fn parse_dockerfile_inline() {
 
     let mut actual_parsed: Compose = from_str(&file_payload).unwrap();
 
-    let dockerfile_inline = actual_parsed
-        .services
-        .0
-        .swap_remove("busybox")
+    #[cfg(feature = "indexmap")]
+    let busybox_service = actual_parsed.services.0.swap_remove("busybox");
+    #[cfg(not(feature = "indexmap"))]
+    let busybox_service = actual_parsed.services.0.remove("busybox");
+
+    let dockerfile_inline = busybox_service
         .flatten()
         .and_then(|service| service.build_)
         .map(|build_| match build_ {

@@ -3,9 +3,11 @@ use derive_builder::*;
 use indexmap::IndexMap;
 use serde::{Deserialize, Deserializer, Serialize};
 #[cfg(feature = "norway")]
-use serde_norway as serde_yaml;
-#[cfg(feature = "yml")]
-use serde_yml as serde_yaml;
+use serde_norway as yaml_backend;
+#[cfg(all(feature = "yaml", not(any(feature = "norway", feature = "yml"))))]
+use serde_yaml as yaml_backend;
+#[cfg(all(feature = "yml", not(feature = "norway")))]
+use serde_yml as yaml_backend;
 
 #[cfg(not(feature = "indexmap"))]
 use std::collections::HashMap;
@@ -13,7 +15,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use serde_yaml::Value;
+use yaml_backend::Value;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -120,9 +122,9 @@ impl<'de> Deserialize<'de> for DeviceCount {
             if s == "all" {
                 return Ok(Self::All);
             }
-            return Err(serde::de::Error::custom(
-                format!("invalid device count: {s:?}, expected \"all\" or an integer"),
-            ));
+            return Err(serde::de::Error::custom(format!(
+                "invalid device count: {s:?}, expected \"all\" or an integer"
+            )));
         }
         if let Some(n) = value.as_u64() {
             return Ok(Self::Count(n));
@@ -988,14 +990,14 @@ pub struct UpdateConfig {
 #[cfg(feature = "indexmap")]
 #[derive(Clone, Default, Debug, Serialize, Deserialize, PartialEq)]
 pub struct ComposeSecrets(
-    #[serde(with = "serde_yaml::with::singleton_map_recursive")]
+    #[serde(with = "yaml_backend::with::singleton_map_recursive")]
     pub  IndexMap<String, Option<ComposeSecret>>,
 );
 
 #[cfg(not(feature = "indexmap"))]
 #[derive(Clone, Default, Debug, Serialize, Deserialize, PartialEq)]
 pub struct ComposeSecrets(
-    #[serde(with = "serde_yaml::with::singleton_map_recursive")]
+    #[serde(with = "yaml_backend::with::singleton_map_recursive")]
     pub  HashMap<String, Option<ComposeSecret>>,
 );
 
