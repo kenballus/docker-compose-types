@@ -1,6 +1,18 @@
 Changelog
 =========
 
+## v0.24.0
+
+(Thanks to @mi-prata)
+
+- Allow `deploy.resources.*.devices.count` to be `all` in addition to integers
+  (#66)
+
+(Other)
+
+- Fix feature-matrix test builds without `indexmap` and when multiple YAML
+  backend features are enabled
+
 ## v0.23.0
 
 (Thanks to @8BitMate)
